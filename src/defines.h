@@ -1128,6 +1128,7 @@ enum
 #define GRAPHICS_ADAM_BOLT      2
 #define GRAPHICS_DAVID_GERVAIS  3
 #define GRAPHICS_PSEUDO         4
+#define GRAPHICS_SHOCKBOLT      5	/* web port: Shockbolt 64x64, graf-shb.prf */
 
 
 /*

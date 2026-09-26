@@ -46,5 +46,8 @@
 ?:[EQU $SYS acn]
 %:graf-acn.prf
 
-?:1
+# Web port: Shockbolt 64x64 tiles
+?:[AND [EQU $SYS web] [EQU $GRAF shb]]
+%:graf-shb.prf
 
+?:1

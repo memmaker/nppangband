@@ -813,7 +813,7 @@
 	}
 	tiles.onload = function () { tilesFinished(true); };
 	tiles.onerror = function () { tilesFinished(false); };
-	var TILE_SRC = '';          /* stage 4 */
+	var TILE_SRC = 'tiles.webp';   /* Shockbolt 64x64 (graf-shb.prf) */
 	if (TILE_SRC) tiles.src = TILE_SRC;
 	else tilesFinished(false);
 

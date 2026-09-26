@@ -365,10 +365,20 @@ static void web_sound(int v)
 /* Tiles in big-tile mode, or text */
 static void web_graphics(int on)
 {
-	use_graphics = arg_graphics = GRAPHICS_NONE;
-	use_transparency = FALSE;
-	use_bigtile = FALSE;
-	(void)on;
+	if (on)
+	{
+		/* Shockbolt tiles (graf-shb.prf via graf.prf), square in big-tile mode */
+		use_graphics = arg_graphics = GRAPHICS_SHOCKBOLT;
+		ANGBAND_GRAF = "shb";
+		use_transparency = TRUE;
+		use_bigtile = TRUE;
+	}
+	else
+	{
+		use_graphics = arg_graphics = GRAPHICS_NONE;
+		use_transparency = FALSE;
+		use_bigtile = FALSE;
+	}
 }
 
 /* The page's Tiles button, applied at the command prompt */

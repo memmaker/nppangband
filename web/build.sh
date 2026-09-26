@@ -25,7 +25,7 @@ emcc -O2 -fcommon -std=gnu99 -DUSE_WEB -Isrc -w \
 	-sFORCE_FILESYSTEM -lidbfs.js -sENVIRONMENT=web \
 	--preload-file web/stage/lib@/nppangband/lib
 
-cp web/index.html rvip/web/rvip-wm.js web/nppangband.js "$OUT/"
+cp web/index.html rvip/web/rvip-wm.js web/nppangband.js web/tiles.webp "$OUT/"
 echo '<p>The game guide is added in stage 6. Press <b>?</b> in the game for its own help.</p>' > "$OUT/help.html"
 # Town music (depth 0), vendored from the Zangband template (Quickband's)
 mkdir -p "$OUT/music" && cp web/music/new_town.ogg "$OUT/music/"

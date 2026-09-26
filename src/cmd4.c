@@ -352,7 +352,7 @@ void do_cmd_messages(void)
 			byte attr = message_color(i + j);
 			u16b count = message_count(i + j);
 
-			if (count == 1)
+			if (count <= 1)
 				msg = str;
 			else
 				msg = format("%s <%dx>", str, count);
@@ -1021,8 +1021,8 @@ static void do_cmd_macro_aux(char *buf)
 	ch = inkey();
 
 
-	/* Read the pattern */
-	while (ch != 0 && ch != DEFINED_XFF)
+	/* Read the pattern (a key burst is capped: its text form must fit tmp) */
+	while (ch != 0 && ch != DEFINED_XFF && n < 200)
 	{
 		/* Save the key */
 		buf[n++] = ch;
@@ -2314,6 +2314,24 @@ static void do_dump_options(void *unused, const char *title)
 
 
 
+/*
+ * Wrappers with the real menu action signature: calling a function through
+ * a pointer of another type is undefined (it traps in WebAssembly).
+ */
+#define OPT_ACTION_WRAP(name, call) \
+	static void name(void *unused, const char *also_unused) \
+	{ (void)unused; (void)also_unused; call; }
+
+OPT_ACTION_WRAP(opt_act_win, do_cmd_options_win())
+OPT_ACTION_WRAP(opt_act_delay, do_cmd_delay())
+OPT_ACTION_WRAP(opt_act_hp_warn, do_cmd_hp_warn())
+OPT_ACTION_WRAP(opt_act_lazymove, do_cmd_lazymove_delay())
+OPT_ACTION_WRAP(opt_act_pref_file, do_cmd_pref_file_hack(20))
+OPT_ACTION_WRAP(opt_act_macros, do_cmd_macros())
+OPT_ACTION_WRAP(opt_act_visuals, do_cmd_visuals())
+OPT_ACTION_WRAP(opt_act_colors, do_cmd_colors())
+
+
 /*** Main menu definitions and display ***/
 
 /*
@@ -2330,17 +2348,17 @@ static menu_action option_actions [] =
 	{'f', "Birth (difficulty) options", do_cmd_options_aux, (void*)3},
 	{'g', "Cheat options", do_cmd_options_aux, (void*)4},
 	{0, 0, 0, 0}, /* Load and append */
-	{'w', "Subwindow display settings", (action_f) do_cmd_options_win, 0},
+	{'w', "Subwindow display settings", opt_act_win, 0},
 	{'s', "Item squelch and Autoinscribe Menu", (action_f) do_cmd_squelch_autoinsc, 0},
-	{'d', "Set base delay factor", (action_f) do_cmd_delay, 0},
-	{'h', "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0},
-	{'i', "Set movement delay", (action_f) do_cmd_lazymove_delay, 0},
-	{'l', "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20},
+	{'d', "Set base delay factor", opt_act_delay, 0},
+	{'h', "Set hitpoint warning", opt_act_hp_warn, 0},
+	{'i', "Set movement delay", opt_act_lazymove, 0},
+	{'l', "Load a user pref file", opt_act_pref_file, 0},
 	{'o', "Save options", do_dump_options, 0},
 	{0, 0, 0, 0}, /* Interact with */
-	{'m', "Interact with macros (advanced)", (action_f) do_cmd_macros, 0},
-	{'v', "Interact with visuals (advanced)", (action_f) do_cmd_visuals, 0},
-	{'c', "Interact with colours (advanced)", (action_f) do_cmd_colors, 0},
+	{'m', "Interact with macros (advanced)", opt_act_macros, 0},
+	{'v', "Interact with visuals (advanced)", opt_act_visuals, 0},
+	{'c', "Interact with colours (advanced)", opt_act_colors, 0},
 };
 
 static menu_type option_menu;

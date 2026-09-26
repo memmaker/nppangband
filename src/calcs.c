@@ -1139,8 +1139,9 @@ static void calc_bonuses(void)
 		/* Save the new value */
 		p_ptr->state.stat_use[i] = use;
 
-		/* Values: 3, 4, ..., 17 */
-		if (use <= 18) ind = (use - 3);
+		/* Values: 3, 4, ..., 17 (a wiped player during birth has 0) */
+		if (use < 3) ind = 0;
+		else if (use <= 18) ind = (use - 3);
 
 		/* Ranges: 18/00-18/09, ..., 18/210-18/219 */
 		else if (use <= 18+219) ind = (15 + (use - 18) / 10);

@@ -2540,7 +2540,7 @@ bool load_player(void)
 
 	errr err = 0;
 
-	byte vvv[4];
+	byte vvv[8];	/* the header read is 8 bytes */
 
 	cptr what = "generic";
 

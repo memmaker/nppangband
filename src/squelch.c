@@ -58,7 +58,7 @@ const size_t squelch_size = SQUELCH_BYTES;
  * can certainly be done more cleanly.
  */
 static int tv_to_type[MAXTV_TO_TYPE];
-static bool seen_type[TYPE_MAX];
+static bool seen_type[TYPE_MAX + 1];	/* TYPE_MISC == TYPE_MAX is used */
 
 /*
  * List of kinds of item, for pseudo-id squelch.
@@ -1525,6 +1525,7 @@ static bool object_sqelch_menu(int tval, const char *desc)
 
 		/* Skip empty objects, unseen objects, and incorrect tvals */
 		if (!k_ptr->name) continue;
+		if (k_ptr->tval >= MAXTV_TO_TYPE) continue;
 		if (tv_to_type[k_ptr->tval] != tval) continue;
 		if (k_ptr->k_flags3 & (TR3_INSTA_ART)) continue;
 		if (k_ptr->tval == TV_GOLD) continue;
@@ -1630,7 +1631,7 @@ static void init_tv_to_type(void)
 	qsort(raw_tvals, NUM_RAW_TVALS, sizeof(raw_tvals[0]), tval_comp_func);
 
 	/* Clear all of the types that have been seen */
-	for (i = 0; i < TYPE_MAX; i++)
+	for (i = 0; i <= TYPE_MAX; i++)
 	{
 		seen_type[i] = FALSE;
 	}
@@ -1688,6 +1689,7 @@ static void init_tv_to_type(void)
 		if (!k_ptr->everseen) continue;
 		if (k_ptr->k_flags3 & (TR3_INSTA_ART)) continue;
 		if (k_ptr->tval == TV_GOLD) continue;
+		if (k_ptr->tval >= MAXTV_TO_TYPE) continue;
 
 		/* Note that we have seen this type */
 		seen_type[tv_to_type[k_ptr->tval]] = TRUE;

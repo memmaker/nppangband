@@ -681,6 +681,7 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 {
 	const char *u[6] = { 0, 0, 0, 0, 0, 0};
 	int n = 0;
+	char discount[80];
 
 	/* See if the object is "known" */
 	bool known = (object_known_p(o_ptr) ? TRUE : FALSE);
@@ -709,10 +710,10 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 	}
 	else if (o_ptr->discount > 0)
 	{
-		char buf[80];
-		my_strcpy(buf, format("%d%% off", o_ptr->discount), sizeof(buf));
+		/* Must outlive this block (used below) */
+		my_strcpy(discount, format("%d%% off", o_ptr->discount), sizeof(discount));
 
-		u[n++] = buf;
+		u[n++] = discount;
 	}
 
 	/* Use the "unknown" inscription */

@@ -231,6 +231,12 @@
 		ctx.fillRect(0, 0, cols * l.cw, rows * l.ch);
 		terms[i] = { cv: cv, ctx: ctx, cols: cols, rows: rows,
 			cw: l.cw, ch: l.ch, font: l.font, dpr: dpr };
+		if (!i) {
+			/* the prompt box over row 0 (RvipWM.prompt): one cell row, same font */
+			var w = $('t-main');
+			w.style.setProperty('--cell-h', l.ch + 'px');
+			w.style.setProperty('--cell-font', l.font + 'px');
+		}
 		fitCanvas(i);
 	}
 

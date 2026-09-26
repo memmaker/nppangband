@@ -249,9 +249,41 @@ way, family stand-ins, report the numbers). One set, never mix.
   blank in tile mode; no light/dark shading of floors; clouds/runes use
   generic GF/rune tiles.
 
-### Next: stage 5 (web page)
-- Windows/flags exist since stage 1 (8 terms, `web_new_character()`);
-  check them against the page, fix the row-0 prompt box over the map,
-  game end (death → tombstone → overlay, New character), and write
-  `web/deploy.sh` (target `ruzzoli.de/roguelikes/nppangband/`) from the
-  template's `rvip/templates/zangband/web/deploy.sh` — never run it here.
+### Stage 5 (web page): done 2026-09-26 (cloud) — deploy NOT run
+- **Windows** (`rvip/web/rvip-wm.js`, copied by the build; `web/index.html`
+  `#t-<id>`, `TERMS` in `web/nppangband.js`, 8 terms = `WEB_TERMS` in
+  `src/main-web.c`): 0 Map, 1 Inventory, 2 Messages, 3 Visible
+  (`PW_MONLIST`), 4 Recall, 5 Equipment, 6 Character (`PW_PLAYER_0`),
+  7 Objects (`PW_ITEMLIST`). Flags set for new characters by
+  `web_new_character()` after `player_birth()` (stage 1). Default on: Map,
+  Inventory, Visible, Messages; the rest via Windows ▾.
+- **Prompt box** (RVIP W4, z-term): `#t-main .wm-topl` in `web/index.html`
+  is one cell row high, full width, opaque, `white-space: pre`, font and
+  height from `--cell-h`/`--cell-font` that `configureTerm(0)` sets per zoom:
+  it now covers row 0 exactly instead of overlapping it.
+- **Layout file** `/nppangband/lib/user/web-layout.json` (IDBFS; splits, wm
+  tree, zoom, fonts, Tiles, audio) — from stage 1.
+- **Game end**: `quit_aux = hook_quit` (`main-web.c`) → `js_sync()` +
+  `js_quit(msg, p_ptr->is_dead)`. Death: tombstone menu + scores wait for
+  keys in C, then the page syncs and reloads; the dead save starts a new
+  birth. Ctrl-X: "Press Return", scores, then the overlay (reload restores;
+  stage-1 test).
+- **`web/deploy.sh`** (template's, guard line = only from pushed commits,
+  refuses without `web/dist`), target `ruzzoli.de/roguelikes/nppangband/`.
+  **Written, never run** (no deploy key in the cloud).
+- Test `node web/test/stage5.mjs`: Inventory/Visible/Equipment/Character
+  terms hold their content, 8 windows, `i` → prompt box 24 px = one cell,
+  text "(Inventory) …"; `Q` → y → y → `@` → tombstone → keys → page reloads
+  → new birth screen; no console errors. Shots `web/shots/s5-*.png`.
+- Open problems: live URL does not exist yet (Mac: deploy); layout
+  persistence across reload not re-tested here (stage-1 code, unchanged);
+  no mouse (clicks not queued, NPP's `DEFINED_XFF` mouse command unused).
+
+### Next: stage 6 (docs + sound)
+- Sound: `sound_hook` → `js_sound(angband_sound_name[v])` (stage 1); page
+  `loadSoundCfg()` reads `/nppangband/lib/xtra/sound/sound.cfg` with
+  `Module.FS.readFile`. Write it with a `web/sounds.py` like the template's
+  (`PACK = rvip/templates/dubtrain`), stage it into the preload, copy wavs
+  to `dist/sound`. Sound/Music off by default.
+- Help: `web/make-help.py` from the template → `dist/help.html`; the Docs
+  page itself is on the Mac: write `docs/web/nppangband-docs.html` here.

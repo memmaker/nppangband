@@ -319,6 +319,70 @@ way, family stand-ins, report the numbers). One set, never mix.
   `angband_sound_name[]`); music only in town (depth 0); hit/kill sounds
   not tested separately (same path as eat).
 
-### Next: stage 7 (publish) — Mac
-- Stages 7–9 need the Mac (repo made public/`memmaker` remote exists,
-  deploy key, roguelikes-index, shrine, beacon). See RVIP.md table.
+### Stage 7 — publish (done 2026-09-26, Mac)
+- **Mac check** (browser pane, own tab, `web/dist` on 127.0.0.1:8747 with
+  `Cache-Control: no-store`): birth (Human Warrior), town, `>` walks to the
+  entrance and descends, `H` explores, `<` walks back up to town, Enter menu
+  + Action submenu, `i` list with cursor + item action box, Windows ▾
+  (Equipment, Character, Recall on) → reload → same windows and character,
+  resize 1440x900 → 1200x750 (prompt open) → 760x500, zoom ±, Tiles off/on,
+  Help guide (Docs entry), Sound/Music off at first load, Sound on after a
+  click (`sound/plm_eat_bite.mp3` on eating), town music plays, no
+  `.cfg`/`.prf` request, Ctrl-X → Hall of Fame → "Play again" overlay →
+  reload restores, no console errors. Live URL checked the same way (birth,
+  stairs, explore, Help links, no console errors).
+- **What the cloud got wrong** (fixed in "RVIP: stage 1-6 fixes (Mac)"):
+  every sub-window went blank after a browser resize or window change until
+  a key/Ctrl-R: `web_apply_layout()` set `p_ptr->window`, which NPP 0.5.1
+  never reads (sub-windows follow `p_ptr->redraw` PR_* events); now it sets
+  the PR flags. The map was fine (unlike Easyband's cloud build): 3.1's
+  `SCREEN_HGT/WID` follow `Term->hgt/wid`, bigtile = square tiles over two
+  8x16 cells, player centred, the map fills the window at the default zoom.
+  Mac paths: `build.sh` takes `rvip-wm.js` from `~/Games/rvip-tools/web`,
+  `mkgraf-shb.py`/`tile-coverage.py` read Shockbolt from
+  `~/Games/tactical-angband/lib/tiles/shockbolt`, `asan.sh` without GNU
+  `xargs -r`/`nproc`, `toolchain.sh` notes Homebrew emcc.
+- **Stash** (local stage-2 attempt): kept the portable `asan.sh`, the local
+  Shockbolt paths and the toolchain note; dropped the rest (the cloud's
+  explore/stairs/menu and the `"web"` module name cover it).
+- **Docs**: entry `nppangband.html` in `~/Desktop/Games/Roguelikes/Docs`
+  (`build-docs.py` GAMES after Easyband + `parse_nppangband()` for
+  `lib/help/cmdlist.txt`, `guides.py` GUIDES + SAVING), generated from
+  `make-help.py`'s data; `make-help.py` now prefers the Docs entry
+  (`NPP_NO_DOCS=1` for the self-contained version). Other Docs pages
+  byte-identical (only `index.html` gained the card).
+- **Repos**: public **memmaker/nppangband** (this folder, remote `memmaker`,
+  branch `main`; `git filter-repo --path rvip --path web/shots --path
+  LESSONS.md --invert-paths`, `git log --all -- rvip` empty). Upstream
+  commit unchanged: `b1d1d85` (filter-repo keeps untouched commits' hashes;
+  the empty "refresh procedure snapshot" commit was dropped). Private
+  **memmaker/nppangband-cloud** (renamed, `~/Games/nppangband-cloud`,
+  remote `origin`, holds the bundle, `web/shots/`, `rvip/LESSONS.md`).
+  README with upstream tag/commit and the compare view.
+- **Live**: https://ruzzoli.de/roguelikes/nppangband/ (`sh web/build.sh &&
+  sh web/deploy.sh`), og block by hand (image `roguelikes/nppangband.png`).
+  Index `94d24c1`: card before Quickband (60 Shockbolt monsters at 32 px,
+  384x160), count 37, tree: the existing `NPPAngband` node under Angband 3.0
+  (parent of Quickband) is now a gold link, "2011 · Jeff Greene, Diego
+  González; 0.5.1 on Angband 3.1.2 code".
+- Test IndexedDB `/nppangband/...` deleted on 127.0.0.1:8747 and ruzzoli.de.
+- Open problems: the main term keeps Angband's 80x24 minimum, so a small Map
+  window (e.g. 760x500 browser, or several extra windows on) shows the map
+  CSS-scaled down (tiny tiles); sub-windows stay blank while a prompt is
+  open during a resize (redrawn when it closes); the Enter submenu box is a
+  few columns wider than its entries; NPP's first release year not checked
+  (card/tree use 0.5.1's 2011; stage 8); the starting kit's torch is already
+  wielded (no problem, just differs from Easyband).
+
+### Next: stage 8 (shrine)
+- Page `~/Games/roguelikes-index/shrine/nppangband.html` (+ `shrine/nppangband/`),
+  Info button on the card, ✦ in the tree, `#bar h1` link in `web/index.html`.
+- Material: manual/help = `lib/help/*.txt` (`general.hlp`, `tutorial.txt`,
+  `birth.txt`, `raceclas.txt`, `quests.txt`, `dungeon.txt`, `town.txt`,
+  `magic.txt`, `cmddesc.txt`, `cmdlist.txt`, ...), the in-game `?` menu;
+  readme `readme.txt` (Angband 3.1.0's, NPP forum link); licence `COPYING`
+  (GPL-2 or Angband licence, tile/sound notes); changelog `NPPchanges.txt`
+  (1238 lines, 0.5.1 back to early versions); credits `AUTHORS`, `THANKS`,
+  splash `lib/file/news.txt`. Upstream history: github.com/nppangband/NPPAngband
+  (tags v0.5.1 … v7.1.0, local branch `master` = 7.1.0). Walkthrough: none
+  known (look on RogueBasin / angband.oook.cz / the NPP forum).

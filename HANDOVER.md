@@ -411,3 +411,26 @@ way, family stand-ins, report the numbers). One set, never mix.
   check (codename "Ghost on the Road" read from the Groups page title only).
 
 ### Next: stage 9 (graveyard + leaderboard)
+
+### Stage 9 — graveyard + leaderboard (done)
+- Hook: `web_run_end()` in `src/main-web.c` (decl in `externs.h` under
+  `USE_WEB`), called from `src/files.c` `close_game()` at the top of the
+  `is_dead` branch, before `death_screen()` (which zeroes a winner's depth).
+  Commit `4f38cad`, deployed.
+- Fields: `g=nppangband`, `ev` (win = `total_winner`; quit = died_from
+  "Quitting"/"Interrupting"/"Abortion"; else death), `name` =
+  `op_ptr->full_name`, `killer` = `died_from` with a/an/the stripped,
+  `depth` = `p_ptr->depth`, `score` = `total_points()`, `turns` = `turn`
+  (both as the high-score entry), `lvl` = `p_ptr->lev`. Nothing missing.
+  Save & quit (Ctrl-X) sends nothing (not a finished run).
+- Killer art: roguelikes-index `9e6eff7`, `killers/make.py` `nppangband()`
+  (generic `angband()` helper, new `the=True` strips a leading "The "),
+  670 PNGs from `web/tiles.webp` via `lib/pref/graf-shb.prf`, deployed.
+- Live test (ruzzoli.de, fetch wrapper): `Q` `y` `@` →
+  `ev=quit&name=PLAYER&depth=0&score=0&turns=20&lvl=1` 204; count `0588`,
+  `^A` `y` `n` summons a Great Hell Wyrm (asleep), walk into it →
+  `ev=death&killer=Great%20Hell%20Wyrm&…` 204, `great-hell-wyrm.png` live;
+  outbox empty both times. Win path not reachable in a test (same
+  `total_winner` check as Easyband). `/nppangband/...` IDB deleted on
+  ruzzoli.de.
+- Open problems: none.

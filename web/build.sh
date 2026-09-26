@@ -9,6 +9,9 @@ rm -rf "$OUT" web/stage && mkdir -p "$OUT" web/stage/lib
 
 # Game files (no X11 fonts, BMP tiles)
 for d in edit file help pref; do cp -R lib/$d web/stage/lib/; done
+# Sound: the web sound.cfg in the preload (the page reads it with FS.readFile), samples in dist/sound
+mkdir -p web/stage/lib/xtra/sound
+python3 web/sounds.py web/stage/lib/xtra/sound/sound.cfg "$OUT/sound"
 mkdir -p web/stage/lib/info web/stage/lib/save web/stage/lib/user web/stage/lib/apex web/stage/lib/bone
 
 # Sources: ANGFILES and ZFILES of src/Makefile.src (no main-*, snd-sdl, gtk), plus main.c main-web.c
@@ -26,7 +29,8 @@ emcc -O2 -fcommon -std=gnu99 -DUSE_WEB -Isrc -w \
 	--preload-file web/stage/lib@/nppangband/lib
 
 cp web/index.html rvip/web/rvip-wm.js web/nppangband.js web/tiles.webp "$OUT/"
-echo '<p>The game guide is added in stage 6. Press <b>?</b> in the game for its own help.</p>' > "$OUT/help.html"
+# The game guide (Help button); the same content as docs/web/nppangband-docs.html
+python3 web/make-help.py > "$OUT/help.html"
 # Town music (depth 0), vendored from the Zangband template (Quickband's)
 mkdir -p "$OUT/music" && cp web/music/new_town.ogg "$OUT/music/"
 rm -rf web/stage

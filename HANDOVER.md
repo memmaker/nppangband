@@ -279,11 +279,42 @@ way, family stand-ins, report the numbers). One set, never mix.
   persistence across reload not re-tested here (stage-1 code, unchanged);
   no mouse (clicks not queued, NPP's `DEFINED_XFF` mouse command unused).
 
-### Next: stage 6 (docs + sound)
-- Sound: `sound_hook` → `js_sound(angband_sound_name[v])` (stage 1); page
-  `loadSoundCfg()` reads `/nppangband/lib/xtra/sound/sound.cfg` with
-  `Module.FS.readFile`. Write it with a `web/sounds.py` like the template's
-  (`PACK = rvip/templates/dubtrain`), stage it into the preload, copy wavs
-  to `dist/sound`. Sound/Music off by default.
-- Help: `web/make-help.py` from the template → `dist/help.html`; the Docs
-  page itself is on the Mac: write `docs/web/nppangband-docs.html` here.
+### Stage 6 (docs + sound): done 2026-09-26 (cloud) — Docs collection entry is Mac work
+- **Sound**: the bundle's `rvip/templates/dubtrain/` was missing, so the
+  Dubtrain Angband Sound Pack v3.1.0 is vendored from upstream Angband
+  (`lib/sounds/*.mp3` + `lib/customize/sound.prf`, commit 1d2ad35a2fc8,
+  CC-BY 4.0) into `web/dubtrain/` (214 mp3, 3.3 MB, README with credit).
+  `web/sounds.py <cfg> <dir>` writes the web `sound.cfg` for all 152
+  `angband_sound_name[]` events (NPP's 3.x names = 4.2's in upper case; `MAP`
+  for breathe_*/summon_*/identify_*/cast_spell/… → BR_*/SUM_*/IDENT_*/SPELL)
+  and copies 211 files to `dist/sound`; only `walk` is silent. `build.sh`
+  stages it into the preload (`/nppangband/lib/xtra/sound/sound.cfg`), the
+  page reads it with `Module.FS.readFile` (`loadSoundCfg()`), never fetch.
+  C/JS unchanged: `sound_hook` → `js_sound()` → `Module.qb.sound()`.
+  Sound and Music off by default (buttons in the bar, kept in the layout).
+- **Help**: `web/make-help.py` (template's shape, but self-contained: the
+  Mac's `~/Desktop/Games/Roguelikes/Docs` is not here; game text inline,
+  complete key list parsed from `lib/help/cmdlist.txt`, 154 commands) →
+  `dist/help.html` in `build.sh`; `--docs` writes the standalone page
+  **`docs/web/nppangband-docs.html`** (About / Keys / Saving / Tips / Guide /
+  Browser / Credits / About this version with upstream + compare links).
+  Credits: Jeff Greene, Diego González; Angband 3.1.2v2 (Andrew Sidwell) and
+  earlier maintainers from `AUTHORS`; GPL-2 or Angband licence (`COPYING`);
+  Shockbolt © Raymond Gaustadnes; Dubtrain CC-BY 4.0; town music from
+  Quickband's port.
+- Test `node web/test/stage6.mjs`: fresh load Sound/Music off; Help shows all
+  sections + credits; no sound fetched while off; Sound on → eat →
+  `plm_eat_bite.mp3` 200; no `.cfg`/`.prf` request; Music on in town →
+  `music/new_town.ogg`; reload keeps both on; no console errors.
+  Stage-1 test re-run (save/restore) after stage 6.
+- **Mac side**: add the Docs collection entry (`build-docs.py` GAMES +
+  `guides.py`) from `web/make-help.py`'s data / `docs/web/nppangband-docs.html`,
+  then switch `make-help.py` back to importing the Docs (template version);
+  deploy (`sh web/build.sh && sh web/deploy.sh`); browser check in the pane.
+- Open problems: no ambient sounds (NPP has no ambient events in
+  `angband_sound_name[]`); music only in town (depth 0); hit/kill sounds
+  not tested separately (same path as eat).
+
+### Next: stage 7 (publish) — Mac
+- Stages 7–9 need the Mac (repo made public/`memmaker` remote exists,
+  deploy key, roguelikes-index, shrine, beacon). See RVIP.md table.

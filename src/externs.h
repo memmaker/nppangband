@@ -1371,6 +1371,12 @@ extern size_t prt_hunger(int row, int col);
 extern size_t prt_state(int row, int col);
 extern void toggle_inven_equip(void);
 extern void subwindows_set_flags(u32b *new_flags, size_t n_subwindows);
+
+#ifdef USE_WEB
+/* main-web.c */
+extern void web_sync_files(void);
+extern void web_new_character(void);
+#endif /* USE_WEB */
 /* Ask the textui core for a game command. */
 extern errr textui_get_cmd(cmd_context context, bool wait);
 /* Set up game event handlers for the textui. */

@@ -1453,6 +1453,11 @@ bool save_player(void)
 		result = TRUE;
 	}
 
+#ifdef USE_WEB
+	/* Write the save directory back to IndexedDB */
+	web_sync_files();
+#endif /* USE_WEB */
+
 
 	/* Return the result */
 	return (result);

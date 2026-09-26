@@ -1,0 +1,5 @@
+web/dist/
+web/stage/
+web/test/node_modules/
+*.o
+web/shots/step.png

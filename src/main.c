@@ -51,6 +51,11 @@ static const struct module modules[] =
 #ifdef USE_GCU
 	{ "gcu", help_gcu, init_gcu },
 #endif /* USE_GCU */
+
+#ifdef USE_WEB
+	/* Registered as "x11": the X11 pref files (keysym macros) are used */
+	{ "x11", help_web, init_web },
+#endif /* USE_WEB */
 };
 
 
@@ -416,8 +421,10 @@ int main(int argc, char *argv[])
 	/* Process the player name */
 	process_player_name(TRUE);
 
+#ifndef USE_WEB
 	/* Install "quit" hook */
 	quit_aux = quit_hook;
+#endif /* USE_WEB */
 
 #ifdef USE_SOUND
 

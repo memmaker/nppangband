@@ -2378,6 +2378,11 @@ void play_game(void)
 		/* Roll up a new character. Quickstart is allowed if ht_birth is set */
 		player_birth(p_ptr->ht_birth ? TRUE : FALSE);
 
+#ifdef USE_WEB
+		/* Sub-window contents of the web page */
+		web_new_character();
+#endif /* USE_WEB */
+
 		/* Randomize the artifacts */
 		if (adult_rand_artifacts)
 		{

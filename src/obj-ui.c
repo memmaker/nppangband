@@ -24,6 +24,9 @@
  * Used by show_inven(), show_equip(), and show_floor().  Mode flags are
  * documented in object.h
  */
+/* Column of the labels of the last list shown in the main window (web item menus) */
+int show_list_col = 0;
+
 static void show_obj_list(int num_obj, char labels[50][80], object_type *objects[50], olist_detail_t mode)
 {
 	int i, row = 0, col = 0;
@@ -72,6 +75,8 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		col = Term->wid - 1 - max_len - ex_width;
 
 		if (col < 3) col = 0;
+
+		show_list_col = col;
 	}
 
 	/* Column offset of the first extra field */

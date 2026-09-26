@@ -451,6 +451,8 @@ extern void do_cmd_steal(cmd_code code, cmd_arg args[]);
 extern void textui_cmd_steal(void);
 extern void do_cmd_alter_aux(int dir);
 extern bool do_cmd_open_aux(int y, int x);
+extern int show_list_col;
+extern bool item_action_menu(int item, int row, int col);
 extern int auto_explore;
 extern void explore_reset(void);
 extern void explore_new_level(void);

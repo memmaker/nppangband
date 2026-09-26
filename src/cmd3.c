@@ -20,43 +20,105 @@
 
 
 /*
+ * Inventory / equipment screen with a cursor (RVIP web port).
+ *
+ * 2/8/arrows move the cursor, Enter/Space/5/6 or the item's letter open
+ * the item's action menu, '/' switches lists, Escape closes; any other
+ * key is taken as a command, as before.
+ */
+static void inven_screen(bool equip)
+{
+	int cur = 0;
+
+	while (TRUE)
+	{
+		int rows[50], items[50], n = 0, y, col;
+		char ch;
+
+		p_ptr->command_wrk = (equip ? USE_EQUIP : USE_INVEN);
+
+		screen_save();
+		item_tester_full = TRUE;
+		if (equip) show_equip(OLIST_WEIGHT);
+		else show_inven(OLIST_WEIGHT | OLIST_QUIVER);
+		item_tester_full = FALSE;
+		col = show_list_col;
+
+		/* Rows that hold an item, by their label */
+		for (y = 1; (y < Term->hgt) && (n < 50); y++)
+		{
+			byte a;
+			char c, c2;
+			int item;
+
+			if (Term_what(col, y, &a, &c) || Term_what(col + 1, y, &a, &c2)) break;
+			if (c2 != ')') continue;
+			item = equip ? label_to_equip(c) : label_to_inven(c);
+			if (item < 0) continue;
+			if (!object_from_item_idx(item)->k_idx) continue;
+			rows[n] = y;
+			items[n++] = item;
+		}
+		if (cur >= n) cur = n ? n - 1 : 0;
+
+		if (equip)
+			prt("(Equipment) Enter/letter: item menu, 2/8: move, /: inventory, Esc. Command: ", 0, 0);
+		else
+			prt(format("(Inventory) Burden %d.%dlb (%d%%). Enter/letter: item menu, /: equipment. Command: ",
+			    p_ptr->total_weight / 10, p_ptr->total_weight % 10,
+			    (10 * p_ptr->total_weight) / (6 * adj_str_wgt[p_ptr->state.stat_ind[A_STR]])), 0, 0);
+
+		/* Cursor */
+		if (n && (col >= 2)) Term_putstr(col - 2, rows[cur], 1, TERM_L_BLUE, ">");
+
+		ch = inkey();
+		screen_load();
+
+		switch (ch)
+		{
+			case ESCAPE: case '0':
+				p_ptr->command_new = 0;
+				return;
+			case '2': case ARROW_DOWN:
+				if (n) cur = (cur + 1) % n;
+				continue;
+			case '8': case ARROW_UP:
+				if (n) cur = (cur + n - 1) % n;
+				continue;
+			case '/': case '4': case ARROW_LEFT:
+				equip = !equip;
+				cur = 0;
+				continue;
+			case '\r': case '\n': case ' ': case '5': case '6': case ARROW_RIGHT:
+				if (n) (void)item_action_menu(items[cur], rows[cur] + 1, MAX(col, 2));
+				return;
+			default:
+			{
+				int item = -1;
+
+				if (isalpha((unsigned char)ch))
+					item = equip ? label_to_equip(ch) : label_to_inven(ch);
+				if ((item >= 0) && object_from_item_idx(item)->k_idx)
+				{
+					for (y = 0; y < n; y++) if (items[y] == item) break;
+					(void)item_action_menu(item, (y < n) ? rows[y] + 1 : 2, MAX(col, 2));
+					return;
+				}
+
+				/* Any other key: a command */
+				p_ptr->command_new = ch;
+				return;
+			}
+		}
+	}
+}
+
+/*
  * Display inventory
  */
 void do_cmd_inven(void)
 {
-	/* Hack -- Start in "inventory" mode */
-	p_ptr->command_wrk = (USE_INVEN);
-
-	/* Save screen */
-	screen_save();
-
-	/* Hack -- show empty slots */
-	item_tester_full = TRUE;
-
-	/* Display the inventory */
-	show_inven(OLIST_WEIGHT | OLIST_QUIVER);
-
-	/* Hack -- hide empty slots */
-	item_tester_full = FALSE;
-
-	/* Prompt for a command */
-	prt(format("(Inventory) Burden %d.%dlb (%d%% capacity). Command: ",
-	    p_ptr->total_weight / 10, p_ptr->total_weight % 10,
-	    (10 * p_ptr->total_weight) / (6 * adj_str_wgt[p_ptr->state.stat_ind[A_STR]])), 0, 0);
-
-	/* Hack -- Get a new command */
-	p_ptr->command_new = inkey();
-
-	/* Load screen */
-	screen_load();
-
-
-	/* Hack -- Process "Escape" */
-	if (p_ptr->command_new == ESCAPE)
-	{
-		/* Reset stuff */
-		p_ptr->command_new = 0;
-	}
+	inven_screen(FALSE);
 }
 
 
@@ -65,36 +127,7 @@ void do_cmd_inven(void)
  */
 void do_cmd_equip(void)
 {
-	/* Hack -- Start in "equipment" mode */
-	p_ptr->command_wrk = (USE_EQUIP);
-
-	/* Save screen */
-	screen_save();
-
-	/* Hack -- show empty slots */
-	item_tester_full = TRUE;
-
-	/* Display the equipment */
-	show_equip(OLIST_WEIGHT);
-
-	/* Hack -- undo the hack above */
-	item_tester_full = FALSE;
-
-	/* Prompt for a command */
-	prt("(Equipment) Command: ", 0, 0);
-
-	/* Hack -- Get a new command */
-	p_ptr->command_new = inkey();
-
-	/* Load screen */
-	screen_load();
-
-	/* Hack -- Process "Escape" */
-	if (p_ptr->command_new == ESCAPE)
-	{
-		/* Reset stuff */
-		p_ptr->command_new = 0;
-	}
+	inven_screen(TRUE);
 }
 
 static int quiver_wield(int item, object_type *o_ptr)

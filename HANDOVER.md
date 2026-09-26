@@ -184,10 +184,40 @@ way, family stand-ins, report the numbers). One set, never mix.
   you leave them (NPP's own `view_torch_grids` behaviour, not the explorer);
   a monster blocking the only path makes explore stop without moving.
 
-### Next: stage 3 (Enter menu + inventory)
-- NPP already has a 3.1 command menu: `do_cmd_menu()` in `src/cmd0.c`
-  (`cmds_all[]` groups, `menu_select()`), bound to `^H` only. Bind Enter to
-  it, check it lists every command incl. `H`.
-- Item menus: `do_cmd_inven()`/`do_cmd_equip()` in `src/cmd3.c` just show
-  the list and take a key; `get_item()` in `src/obj-ui.c`. Port the
-  Zangband template's `inven_screen()` idea (preselect + queued command).
+### Stage 3 (Enter menu + inventory): done 2026-09-26 (cloud)
+- **Enter menu**: NPP's own 3.1 command menu `do_cmd_menu()` (`src/cmd0.c`,
+  `cmds_all[]` groups → `cmd_menu()` sub-list, `menu_select()`), before on
+  `^H` only; now also `'\r'` and `'\n'` in `cmd_hidden[]`. All 6 groups
+  (Use magic/Pray, Action, Use item, Manage items, Information, Utility)
+  incl. the new "Explore the level" (H). Cursor 2/8 + Enter, Escape closes.
+- **Item menus**: `inven_screen()` in `src/cmd3.c` (`do_cmd_inven()`/
+  `do_cmd_equip()` call it): cursor `>` left of the labels (column from
+  `show_list_col`, set in `show_obj_list()` in `obj-ui.c`; item of a row by
+  its label via `Term_what` + `label_to_inven/equip`), 2/8/arrows move,
+  Enter/Space/5/6 or the item's letter open the action menu, `/` (or 4)
+  switches lists, Escape/0 close, any other key is taken as a command
+  (as before).
+- **How item actions run (direct call + preselect)**: `item_action_menu()`
+  at the end of `src/cmd-obj.c` lists the `item_actions[]` entries whose
+  filter and places (`USE_INVEN/EQUIP/FLOOR`) accept the item
+  (`item_action_okay()`), each with its command key (q r E u a z A b G m F
+  w t d I { }). Choosing one sets `do_item_preselect` and calls `do_item()`,
+  which skips `get_item()` for that item (aiming still asks a direction);
+  commands then go through `cmd_insert()` as usual.
+- Test: `node web/test/stage3.mjs`: Enter menu (all groups, Action list with
+  Explore, run by cursor), `i` cursor, `a` → menu (Eat/Drop/Examine), `E`
+  eats (rations −1), cursor+Enter opens the menu, `e` → body armour → `t`
+  takes it off into the pack, `/` switches lists; no console errors.
+  Shots `web/shots/s3-*.png`.
+- Open problems: the list does not reopen after an action; Destroy (`k`),
+  throw and fire are not in the item menu (not in `item_actions[]`); the
+  page prompt box (RvipWM.prompt) still covers the start of row 0; no
+  ASan run for stages 2–3 (time).
+
+### Next: stage 4 (tiles)
+- Decision from stage 1: **Shockbolt** (own 16x16 78.3%, 32x32 63.6%, no
+  `F:` lines in either pref). Copy the Zangband template: `web/mkgraf-shb.py`
+  (set `SHB`/`GD` to `rvip/templates/tactical-angband/...`), `tiles.webp`,
+  the page's `TILE_SRC`; `init_web()` sets `use_graphics`, `ANGBAND_GRAF`
+  (→ `graf-shb.prf`, add it to `lib/pref/graf.prf` for `$SYS web` or load it
+  from `init_web`).

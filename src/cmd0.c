@@ -170,6 +170,8 @@ static command_type cmd_hidden[] =
 	{ "Stand still",              ',', CMD_HOLD, NULL },
 	{ "Check knowledge",          '|', CMD_NULL, do_cmd_knowledge },
 	{ "Display menu of actions", KTRL('H'), CMD_NULL, do_cmd_menu },
+	{ "Display menu of actions", '\r', CMD_NULL, do_cmd_menu },
+	{ "Display menu of actions", '\n', CMD_NULL, do_cmd_menu },
 	{ "Center map",              KTRL('L'), CMD_NULL, do_cmd_center_map },
 
 	{ "Toggle wizard mode",  KTRL('W'), CMD_NULL, do_cmd_wizard },

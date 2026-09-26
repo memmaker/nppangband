@@ -3694,6 +3694,28 @@ bool trap_related_object(object_type *o_ptr)
 
 /*** Old-style noun-verb functions ***/
 
+/* Item chosen in the inventory/equipment screen for the next do_item() */
+static int do_item_preselect = -1000;
+
+/* Could item_actions[act] use this item?  (its filter and places) */
+static bool item_action_okay(int act, int item)
+{
+	int mode = item_actions[act].mode;
+	bool ok;
+
+	if ((item >= 0) && (item < INVEN_PACK) && !(mode & USE_INVEN)) return (FALSE);
+	if ((item >= INVEN_WIELD) && !(mode & (USE_EQUIP | USE_QUIVER))) return (FALSE);
+	if ((item < 0) && !(mode & USE_FLOOR)) return (FALSE);
+	if (!object_from_item_idx(item)->k_idx) return (FALSE);
+
+	item_tester_hook = item_actions[act].filter;
+	ok = get_item_okay(item);
+	item_tester_hook = NULL;
+	item_tester_tval = 0;
+	return (ok);
+}
+
+
 /* Generic "do item action" function */
 static void do_item(item_act act)
 {
@@ -3713,7 +3735,18 @@ static void do_item(item_act act)
 	q = item_actions[act].prompt;
 	s = item_actions[act].noop;
 	item_tester_hook = item_actions[act].filter;
-	if (!get_item(&item, q, s, item_actions[act].mode)) return;
+	if ((do_item_preselect != -1000) && item_action_okay(act, do_item_preselect))
+	{
+		/* Chosen in the item menu (web port) */
+		item = do_item_preselect;
+		do_item_preselect = -1000;
+	}
+	else
+	{
+		do_item_preselect = -1000;
+		item_tester_hook = item_actions[act].filter;
+		if (!get_item(&item, q, s, item_actions[act].mode)) return;
+	}
 
 	/* Get the item */
 	o_ptr = object_from_item_idx(item);
@@ -3765,3 +3798,90 @@ void textui_cmd_eat_food(void) { do_item(ACTION_EAT_FOOD); }
 void textui_cmd_quaff_potion(void) { do_item(ACTION_QUAFF_POTION); }
 void textui_cmd_read_scroll(void) { do_item(ACTION_READ_SCROLL); }
 void textui_cmd_refill(void) { do_item(ACTION_REFILL); }
+
+
+/*
+ * Item action menu (RVIP web port): a box of the actions that fit the
+ * item, each shown with the key of its command.  Returns FALSE on Escape.
+ */
+static const struct { int act; char key; const char *name; } item_menu_acts[] =
+{
+	{ ACTION_QUAFF_POTION, 'q', "Quaff" },
+	{ ACTION_READ_SCROLL, 'r', "Read" },
+	{ ACTION_EAT_FOOD, 'E', "Eat" },
+	{ ACTION_USE_STAFF, 'u', "Use" },
+	{ ACTION_AIM_WAND, 'a', "Aim" },
+	{ ACTION_ZAP_ROD, 'z', "Zap" },
+	{ ACTION_ACTIVATE, 'A', "Activate" },
+	{ ACTION_BROWSE, 'b', "Browse" },
+	{ ACTION_STUDY, 'G', "Study" },
+	{ ACTION_CAST, 'm', "Cast from" },
+	{ ACTION_REFILL, 'F', "Refuel with" },
+	{ ACTION_WIELD, 'w', "Wear/wield" },
+	{ ACTION_TAKEOFF, 't', "Take off" },
+	{ ACTION_DROP, 'd', "Drop" },
+	{ ACTION_EXAMINE, 'I', "Examine" },
+	{ ACTION_INSCRIBE, '{', "Inscribe" },
+	{ ACTION_UNINSCRIBE, '}', "Uninscribe" },
+};
+
+bool item_action_menu(int item, int row, int col)
+{
+	int list[N_ELEMENTS(item_menu_acts)];
+	int n = 0, i, cur = 0, w = 0;
+	bool done = FALSE, chosen = FALSE;
+
+	for (i = 0; i < (int)N_ELEMENTS(item_menu_acts); i++)
+	{
+		if (!item_action_okay(item_menu_acts[i].act, item)) continue;
+		list[n++] = i;
+		w = MAX(w, (int)strlen(item_menu_acts[i].name) + 6);
+	}
+	if (!n) return (FALSE);
+
+	/* Fit the box on the screen */
+	if (row + n + 2 > Term->hgt) row = MAX(1, Term->hgt - n - 2);
+	if (col + w + 2 > Term->wid) col = MAX(0, Term->wid - w - 2);
+
+	screen_save();
+	while (!done)
+	{
+		char ch;
+
+		window_make(col, row, col + w + 1, row + n + 1);
+		for (i = 0; i < n; i++)
+		{
+			byte attr = (i == cur) ? TERM_L_BLUE : TERM_WHITE;
+			Term_putstr(col + 2, row + 1 + i, -1, attr,
+				format("%c) %s", item_menu_acts[list[i]].key, item_menu_acts[list[i]].name));
+		}
+		Term_gotoxy(col + 2, row + 1 + cur);
+		ch = inkey();
+
+		switch (ch)
+		{
+			case ESCAPE: case '0': case '4': done = TRUE; break;
+			case '2': case ARROW_DOWN: cur = (cur + 1) % n; break;
+			case '8': case ARROW_UP: cur = (cur + n - 1) % n; break;
+			case '\r': case '\n': case ' ': case '5': case '6': case ARROW_RIGHT:
+				chosen = TRUE; done = TRUE; break;
+			default:
+				for (i = 0; i < n; i++)
+				{
+					if (item_menu_acts[list[i]].key != ch) continue;
+					cur = i; chosen = TRUE; done = TRUE;
+					break;
+				}
+				break;
+		}
+	}
+	screen_load();
+
+	if (!chosen) return (FALSE);
+
+	/* Run the command on this item (the item prompt is skipped) */
+	do_item_preselect = item;
+	do_item(item_menu_acts[list[cur]].act);
+	do_item_preselect = -1000;
+	return (TRUE);
+}

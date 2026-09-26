@@ -2,6 +2,10 @@
 
 ## Cloud experiment (read this first)
 
+(Since stage 7 the `rvip/` bundle, `web/shots/` and `rvip/LESSONS.md` exist only
+in the private cloud history: memmaker/nppangband-cloud, `~/Games/nppangband-cloud`.
+This public repo is that history filtered with `git filter-repo`.)
+
 This repo runs the RVIP import in a Claude Code **cloud** session. Everything
 the procedure normally takes from sibling folders on the maintainer's Mac is
 bundled under `rvip/`:

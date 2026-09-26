@@ -3135,6 +3135,10 @@ void close_game(void)
 	/* Handle death */
 	if (p_ptr->is_dead)
 	{
+#ifdef USE_WEB
+		web_run_end();
+#endif
+
 		/* Auxiliary routine */
 		death_screen();
 	}

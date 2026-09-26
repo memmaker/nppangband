@@ -1385,6 +1385,7 @@ extern void subwindows_set_flags(u32b *new_flags, size_t n_subwindows);
 /* main-web.c */
 extern void web_sync_files(void);
 extern void web_new_character(void);
+extern void web_run_end(void);
 #endif /* USE_WEB */
 /* Ask the textui core for a game command. */
 extern errr textui_get_cmd(cmd_context context, bool wait);

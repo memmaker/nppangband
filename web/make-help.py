@@ -51,7 +51,7 @@ KEY_HINTS = [
     ('Ctrl+S', 'Save'),
 ]
 
-ABOUT = '''<p><strong>NPPAngband</strong> ("Not Pure Plain Angband") started as a small set of changes to
+ABOUT = '''<p><strong>NPPAngband</strong> ("No Pet Peeves Angband") started as a small set of changes to
 Angband 3.0 and grew into a variant of its own. Version 0.5.1 is built on Angband 3.1.2 and keeps the
 familiar game: descend through 100 levels of dungeon below the town, find better gear, and defeat
 Sauron and Morgoth at the bottom.</p>

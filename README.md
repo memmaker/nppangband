@@ -5,8 +5,8 @@ the first commit here, untouched).
 Play: https://ruzzoli.de/roguelikes/nppangband/
 Our changes: https://github.com/memmaker/nppangband/compare/b1d1d85...main
 
-NPPAngband ("Not Pure Plain Angband") began as a small set of changes to
-Angband 3.0.x and grew into a variant of its own:
+NPPAngband ("No Pet Peeves Angband") began as a small set of changes to
+Angband 3.0.3 (0.1.0, April 2003) and grew into a variant of its own:
 Moria (1985) → Umoria (1989) → Angband 2.x → Angband 3.0.x → NPPAngband
 (Jeff Greene; Diego González co-maintainer from 0.4.1). Version
 0.5.1 (2011) is rebuilt on Angband 3.1.2v2 code. It keeps the dive to

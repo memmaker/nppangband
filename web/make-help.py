@@ -3,16 +3,15 @@
 or with --docs a standalone page (docs/web/nppangband-docs.html) in the shape
 of the Docs collection's pages.
 
-Port of the Zangband template's make-help.py.  That one reads the desktop
-key guides in ~/Desktop/Games/Roguelikes/Docs (build-docs.py + guides.py);
-the cloud session has no such folder, so the game content lives here and the
-complete key list is parsed from lib/help/cmdlist.txt.  On the Mac, move the
-GAME/GUIDE data below into build-docs.py / guides.py and switch this script
-back to the template's import (see HANDOVER.md, stage 6).
+On the Mac the game content comes from the desktop key guides in
+~/Desktop/Games/Roguelikes/Docs (build-docs.py + guides.py, entry
+'nppangband.html'), so both guides stay in sync; without that folder (cloud)
+the same content comes from the constants below.  The complete key list is
+parsed from lib/help/cmdlist.txt either way.
 
   python3 web/make-help.py > web/dist/help.html
   python3 web/make-help.py --docs > docs/web/nppangband-docs.html"""
-import html, os, re, sys
+import html, importlib.util, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 esc = html.escape
@@ -121,6 +120,22 @@ CREDITS = '''<ul>
 <li><strong>Sounds:</strong> Dubtrain Angband Sound Pack v3.1.0 by Dubtrain (dubtrain.com/angband), Creative Commons Attribution 4.0.</li>
 <li><strong>Music:</strong> town tune from the Quickband web port.</li>
 </ul>'''
+
+
+# Desktop Docs entry, when it exists, wins (same fields)
+DOCS = os.path.expanduser('~/Desktop/Games/Roguelikes/Docs')
+PAGE = 'nppangband.html'
+if os.path.exists(os.path.join(DOCS, 'build-docs.py')) and not os.environ.get('NPP_NO_DOCS'):
+    sys.path.insert(0, DOCS)
+    spec = importlib.util.spec_from_file_location('build_docs', os.path.join(DOCS, 'build-docs.py'))
+    docs = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(docs)
+    from guides import GUIDES   # noqa: E402
+    game = next((g for g in docs.GAMES if g['file'] == PAGE), None)
+    if game and PAGE in GUIDES:
+        info = dict(game['info'])
+        TAGLINE, ESSENTIALS, TIPS, CREDITS = game['tagline'], game['essentials'], info['Tips'], info['Credits']
+        ABOUT, GUIDE = GUIDES[PAGE][0][1], GUIDES[PAGE][1:]
 
 
 def all_keys():

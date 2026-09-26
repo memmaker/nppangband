@@ -13,7 +13,7 @@ SRCS=$(sed -n '/^ZFILES/,/^$/p;/^ANGFILES/,/^$/p' src/Makefile.src \
 for f in $SRCS src/main.c src/main-gcu.c; do
 	o="$ASAN/obj/$(basename "$f" .c).o"
 	[ "$o" -nt "$f" ] || echo "$f"
-done | xargs -r -P "$(nproc)" -I{} sh -c 'gcc -c -g -O1 -fno-omit-frame-pointer -fsanitize=address -fcommon -std=gnu99 -w -DUSE_GCU -include '"$ASAN"'/cfg.h -Isrc {} -o '"$ASAN"'/obj/$(basename {} .c).o'
+done | xargs -P "$(getconf _NPROCESSORS_ONLN)" -I{} sh -c 'gcc -c -g -O1 -fno-omit-frame-pointer -fsanitize=address -fcommon -std=gnu99 -w -DUSE_GCU -include '"$ASAN"'/cfg.h -Isrc {} -o '"$ASAN"'/obj/$(basename {} .c).o'
 gcc -fsanitize=address -o "$ASAN/run/nppangband" "$ASAN"/obj/*.o -lncurses
 rm -rf "$ASAN/run/lib" && mkdir -p "$ASAN/run/lib"
 for d in edit file help pref xtra; do cp -R lib/$d "$ASAN/run/lib/"; done

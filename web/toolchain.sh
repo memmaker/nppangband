@@ -19,3 +19,9 @@ pip install pillow pyte
 #   see web/asan.sh
 # Browser tests: Playwright + the pre-installed Chromium (/opt/pw-browsers)
 #   (cd web/test && npm install) ; see web/test/*.mjs
+
+# --- Mac (stage 7, 2026-09-26) ---
+# Homebrew emscripten: /opt/homebrew/bin/emcc (6.0.10), no emsdk_env needed.
+# sh web/build.sh (no emsdk_env). rvip-wm.js from ~/Games/rvip-tools/web; Shockbolt for
+# mkgraf-shb.py / tile-coverage.py from ~/Games/tactical-angband/lib; Dubtrain is vendored in web/dubtrain.
+# ASan: Apple clang as gcc (web/asan.sh), system ncurses; pyte in a venv.

@@ -205,8 +205,10 @@ static void web_apply_layout(void)
 		if (main_changed) do_cmd_redraw();
 		else if (sub_changed)
 		{
-			p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_MESSAGE |
-			                  PW_MONSTER | PW_OBJECT | PW_MONLIST | PW_ITEMLIST);
+			/* NPP's sub-windows follow p_ptr->redraw (p_ptr->window is unused) */
+			p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_INVEN | PR_EQUIP |
+			                  PR_MESSAGE | PR_MONSTER | PR_OBJECT |
+			                  PR_MONLIST | PR_ITEMLIST | PR_FEATURE);
 			if (at_prompt) handle_stuff();
 		}
 	}

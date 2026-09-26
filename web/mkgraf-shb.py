@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Write lib/pref/graf-shb.prf: Shockbolt tiles (Angband 4.2's 64x64 set,
-bundled as rvip/templates/tactical-angband) for NPPAngband 0.5.1's
+~/Games/tactical-angband on the Mac) for NPPAngband 0.5.1's
 monster.txt / object.txt / terrain.txt / flavor.txt and the S: slots.
 
 Ported from the Zangband template (rvip/templates/zangband/web/mkgraf-shb.py).
@@ -9,9 +9,9 @@ entry without a tile of its own gets its family's tile (monsters: same symbol,
 same colour if possible; objects: same tval) and is marked "(stand-in)".
 Features (by name keywords), flavours (L:, by kind and colour) and the S:
 slots are mapped here by hand.  Run from the repo root: python3 web/mkgraf-shb.py"""
-import re, unicodedata
-SHB = 'rvip/templates/tactical-angband/lib/shockbolt'
-GD = 'rvip/templates/tactical-angband/lib/gamedata'
+import os, re, unicodedata
+SHB = os.path.expanduser('~/Games/tactical-angband/lib/tiles/shockbolt')
+GD = os.path.expanduser('~/Games/tactical-angband/lib/gamedata')
 ED = 'lib/edit'
 COLS = 'dwsorgbuDWvyRGBU'
 CNAME = ['Dark', 'White', 'Slate', 'Orange', 'Red', 'Green', 'Blue', 'Umber', 'Light Dark',

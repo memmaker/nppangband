@@ -15,7 +15,7 @@ if arg == 'dvg':
 elif arg == 'new':
     prefs, sheet, S = ['graf-new.prf'], f'{L}/xtra/graf/16x16.png', 16
 else:
-    prefs, sheet, S = ['graf-shb.prf'], 'rvip/templates/tactical-angband/lib/shockbolt/64x64.png', 64
+    prefs, sheet, S = ['graf-shb.prf'], os.path.expanduser('~/Games/tactical-angband/lib/tiles/shockbolt/64x64.png'), 64
     if not os.path.exists(sheet):
         sheet = 'web/tiles.webp'
 img = Image.open(sheet).convert('RGBA')

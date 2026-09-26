@@ -355,7 +355,7 @@
 	}
 
 	function glyph(b) {
-		/* font-x11.prf uses the X11 fixed font's DEC graphics: 1 diamond, 2 wall */
+		/* DEC-style graphics codes (font-x11.prf is not loaded for "web") */
 		if (b === 1) return '\u25C6';
 		if (b === 2) return '\u2592';
 		if (b < 32 || b === 127) return ' ';

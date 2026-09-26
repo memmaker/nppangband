@@ -1601,7 +1601,7 @@ void process_player(void)
 	}
 
 	/* Check for "player abort" */
-	if (p_ptr->running ||
+	if (p_ptr->running || auto_explore ||
 	    p_ptr->command_rep ||
 	    (p_ptr->resting && !(turn & 0x7F)))
 	{
@@ -1673,6 +1673,12 @@ void process_player(void)
 
 			/* Take a turn */
 			p_ptr->p_energy_use = BASE_ENERGY_MOVE;
+		}
+
+		/* Auto-explore / walk to stairs */
+		else if (auto_explore)
+		{
+			explore_step();
 		}
 
 		/* Running */
@@ -1973,6 +1979,9 @@ static void dungeon(void)
 
 	/* Not leaving */
 	p_ptr->leaving = FALSE;
+
+	/* Forget the explorer's map */
+	explore_new_level();
 
 	/* Reset the "command" vars */
 	p_ptr->command_cmd = 0;

@@ -8,9 +8,10 @@
  * web/nppangband.js).  Blocking input uses Asyncify: when the game waits
  * for a key we sleep in emscripten_sleep(), which yields to the browser.
  *
- * The module registers itself as "x11" so that the same pref files
- * (keymaps, window layout, graphics) as the X11 build are used; special
- * keys are sent in the X11 keysym macro format.
+ * The module registers itself as "web"; lib/pref/pref.prf loads the X11
+ * keysym macros (pref-x11.prf) for it, since special keys are sent in the
+ * X11 keysym macro format.  font-x11.prf is not loaded: it maps walls and
+ * floors to glyphs of the X11 font that a web font does not have.
  */
 
 #include "angband.h"

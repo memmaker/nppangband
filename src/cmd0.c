@@ -73,6 +73,7 @@ static command_type cmd_action[] =
 	{ "Search for traps/doors",     's', CMD_SEARCH, NULL },
 	{ "Disarm a trap or chest",     'D', CMD_NULL, textui_cmd_disarm },
 	{ "Rest for a while",           'R', CMD_NULL, textui_cmd_rest },
+	{ "Explore the level",          'H', CMD_NULL, do_cmd_explore },
 	{ "Look around",                'l', CMD_NULL, do_cmd_look },
 	{ "Target monster or location", '*', CMD_NULL, do_cmd_target },
 	{ "Target closest monster",     '\'', CMD_NULL, do_cmd_target_closest },

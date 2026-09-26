@@ -141,9 +141,53 @@ way, family stand-ins, report the numbers). One set, never mix.
   (probably the torch was taken off; check walls in stage 2); the prompt box
   (RvipWM.prompt) sits over row 0 of the map; no mouse (clicks not queued).
 
-### Next: stage 2 (explore + stairs)
-- 3.1-era code: Quickband's `pathfind.c` `explore_step()` is the closest
-  template (not bundled here; port from the Zangband stage-2 description).
-  NPP has its own `src/pathfind.c` (mouse travel) and `cmd0.c` command
-  tables (`cmd_init()`), `textui_process_command()` in `cmd0.c`,
-  `process_player()` in `dungeon.c` ~l.1720, `disturb()` in `util.c`/`xtra2.c`.
+### Stage 2 (explore + stairs): done 2026-09-26 (cloud, resumed session)
+- **Explore key `H`** (was unused in the original keyset, `lib/help/cmdlist.txt`;
+  roguelike `H` stays run west: no explore key there). Entry
+  `{ "Explore the level", 'H', CMD_NULL, do_cmd_explore }` in `cmd_action[]`
+  (`src/cmd0.c`), so it is also in NPP's own command menu.
+- Code: end of `src/cmd2.c`: `auto_explore` (0 off, 1 explore, 2 walk to `<`,
+  3 walk to `>`), `explore_step()`, `do_cmd_explore()`, `explore_to_stairs()`,
+  `explore_reset()`, `explore_new_level()`; prototypes in `externs.h`;
+  `do_cmd_open_aux()` no longer static.
+- Hooks: `process_player()` (`dungeon.c`) treats `auto_explore` like running
+  (key abort check, `else if (auto_explore) explore_step();` before
+  `run_step`); `dungeon()` calls `explore_new_level()` after
+  `p_ptr->leaving = FALSE`; `disturb()` (`cave.c`) calls `explore_reset()`;
+  `do_cmd_go_up/down()` (`cmd2.c`) call `explore_to_stairs()` instead of
+  "I see no ... staircase here". On the stair it `cmd_insert(CMD_GO_UP/DOWN)`.
+- **Known grid**: `cave_info & CAVE_MARK` or the explorer's own
+  `explore_seen[][]` (every `CAVE_SEEN` grid noted each step: NPP forgets
+  torch-lit corridor floors). Passable: known, `cave_passable_bold`, not a
+  shop, no visible player trap (`EF1_HIDDEN`), no damaging non-native terrain;
+  known closed doors are opened with `do_cmd_open_aux()` (given up after 5
+  tries: locked/stuck). Targets: known grid next to an unknown one, or a
+  marked object not stood on. BFS from all targets, step to the neighbour
+  with the smallest distance.
+- Stops: `disturb()`, a new message (`messages_num()`), confusion/blind/
+  hallucination, a visible monster in `projectable()` range (explore only;
+  `NEVER_MOVE` monsters only within 2 grids), a step that did not move.
+  `<`/`>` without a known staircase explore until one is seen, then walk.
+- **Map fix**: the web module registered as `"x11"` loaded `font-x11.prf`,
+  which draws walls/floors as X11-font glyphs 1–31/127 (blank on the page:
+  the "only `@` and `<`" problem of stage 1). Now `{ "web", ... }` in
+  `main.c`; `lib/pref/pref.prf` loads `pref-x11.prf` (keysym macros) for
+  `$SYS web` too; fonts/graf come from `font-xxx.prf`/`graf-xxx.prf`.
+- Help: `lib/help/cmdlist.txt` (H), `cmddesc.txt` ("Explore (H)", stairs walk).
+- Test: `node web/test/stage2.mjs` (Playwright, headless): town `>` walks to
+  the stairs and descends; 40× `H` on level 1 (monsters in view removed with
+  debug `^A z`) until "Nothing left to explore."; `>` → 100 ft; `<` → 50 ft;
+  no console errors. Shots `web/shots/s2-*.png`.
+- Not done: ASan random-key run weighted to `H`/`<`/`>` (time budget of the
+  cloud session; `web/asan.sh` + `web/asan-keys.py` are ready for it).
+- Open problems: corridor floors lit only by the torch are not drawn after
+  you leave them (NPP's own `view_torch_grids` behaviour, not the explorer);
+  a monster blocking the only path makes explore stop without moving.
+
+### Next: stage 3 (Enter menu + inventory)
+- NPP already has a 3.1 command menu: `do_cmd_menu()` in `src/cmd0.c`
+  (`cmds_all[]` groups, `menu_select()`), bound to `^H` only. Bind Enter to
+  it, check it lists every command incl. `H`.
+- Item menus: `do_cmd_inven()`/`do_cmd_equip()` in `src/cmd3.c` just show
+  the list and take a key; `get_item()` in `src/obj-ui.c`. Port the
+  Zangband template's `inven_screen()` idea (preselect + queued command).

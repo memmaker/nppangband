@@ -217,6 +217,15 @@ wake up when anything disturbs you, or when you press any key.
 restored, and "&" to rest until you are fully "healed".  This command may accept
 a command count (used for the number of turns to rest), and takes a full turn.
 
+Explore (H) :
+     Walks towards the nearest unexplored part of the level (or a seen object
+you have not stood on yet), opening doors on the way, one step per turn.  It
+stops when a monster comes into view, when a message appears, when you press
+a key, or when nothing is left to explore.
+     Walking to stairs ('<' / '>') : if you use '<' or '>' away from a
+staircase, you walk to the nearest known staircase of that kind and take it;
+if none is known yet, you explore until one is found.
+
 Search (s) :
      Search for hidden traps and secret doors adjacent to you.  More than a
 single turn of searching will be required in most cases.  This command can take

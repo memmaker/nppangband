@@ -53,8 +53,9 @@ static const struct module modules[] =
 #endif /* USE_GCU */
 
 #ifdef USE_WEB
-	/* Registered as "x11": the X11 pref files (keysym macros) are used */
-	{ "x11", help_web, init_web },
+	/* "web": pref.prf loads pref-x11.prf (keysym macros) for it, but the
+	 * X11 font/graf prefs (glyphs 1-31, 127 of the X11 font) are not used */
+	{ "web", help_web, init_web },
 #endif /* USE_WEB */
 };
 

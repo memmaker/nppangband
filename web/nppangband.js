@@ -424,8 +424,10 @@
 		mapSel.value = (L && L.mapFace) || '';
 	}
 	/* Fonts: faces from the index page's fonts/ (web/build.sh lists them) */
+	/* Pop-ups (the prompt box over the map's row 0) use the text font */
+	function popupFace() { var w = $('t-main'); if (w) w.style.setProperty('--cell-face', face(1)); }
 	function loadFace(n, now) {
-		var redraw = function () { if (terms.length) scheduleLayout(); };
+		var redraw = function () { popupFace(); if (terms.length) scheduleLayout(); };
 		if (!n) { if (now) redraw(); return; }
 		var ff = new FontFace(n, 'url(../fonts/' + n + '.woff)');
 		ff.load().then(function () { document.fonts.add(ff); redraw(); })
@@ -823,7 +825,7 @@
 			buildTerms();
 			renderTiles();
 			$('sel-font').value = L.face || '';
-			loadFace(L.face); loadFace(L.mapFace);
+			popupFace(); loadFace(L.face); loadFace(L.mapFace);
 		},
 		print: function (s) { console.log(s); },
 		printErr: function (s) { console.warn(s); },

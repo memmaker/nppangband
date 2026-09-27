@@ -3,7 +3,7 @@
 ## Cloud experiment (read this first)
 
 (Since stage 7 the `rvip/` bundle, `web/shots/` and `rvip/LESSONS.md` exist only
-in the private cloud history: memmaker/nppangband-cloud.
+in the private cloud history: memmaker/nppangband-cloud (deleted 2026-09-27).
 This public repo is that history filtered with `git filter-repo`.)
 
 This repo runs the RVIP import in a Claude Code **cloud** session. Everything
@@ -356,7 +356,7 @@ way, family stand-ins, report the numbers). One set, never mix.
   LESSONS.md --invert-paths`, `git log --all -- rvip` empty). Upstream
   commit unchanged: `b1d1d85` (filter-repo keeps untouched commits' hashes;
   the empty "refresh procedure snapshot" commit was dropped). Private
-  **memmaker/nppangband-cloud** (renamed,
+  **memmaker/nppangband-cloud** (deleted 2026-09-27) (renamed,
   remote `origin`, holds the bundle, `web/shots/`, `rvip/LESSONS.md`).
   README with upstream tag/commit and the compare view.
 - **Live**: https://ruzzoli.de/roguelikes/nppangband/ (`sh web/build.sh &&

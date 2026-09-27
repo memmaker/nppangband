@@ -194,6 +194,8 @@
 		if (!i) {
 			ch = L.tile; cw = L.tile / 2;
 			font = Math.floor(Math.min(ch * 0.8, cw / 0.62));
+			/* text mode: cells from the map font, so wide fonts do not overlap */
+			if (!tilesReady || L.text) { cw = Math.ceil(measure(font, 0)); ch = Math.round(font * 1.3); }
 			cols = clamp(Math.floor(box.w / cw), 80, 255);
 			rows = clamp(Math.floor(box.h / ch), 24, 255);
 		} else {
@@ -397,6 +399,7 @@
 		tilesSwitch = L.text ? 0 : 1;
 		saveLayout();
 		renderTiles();
+		if (terms.length) scheduleLayout();   /* text mode sizes map cells from the font */
 	}
 	function renderTiles() { $('btn-tiles').textContent = 'Tiles: ' + (L && L.text ? 'off' : 'on'); renderMapSel(); }
 	/* Map font select on the Map title bar, text mode only (shown on hover) */

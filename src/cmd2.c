@@ -3022,9 +3022,8 @@ void explore_step(void)
 
 	if (dir == -1)
 	{
-		/* On the wanted staircase: take it */
+		/* On the wanted staircase: stop; the player presses the key again */
 		explore_reset();
-		cmd_insert((mode == 2) ? CMD_GO_UP : CMD_GO_DOWN);
 		return;
 	}
 
@@ -3097,7 +3096,7 @@ void do_cmd_explore(void)
 	(void)explore_start(1);
 }
 
-/* '<' / '>' away from stairs: walk to the nearest known one and take it */
+/* '<' / '>' away from stairs: walk to the nearest known one (press again to take it) */
 void explore_to_stairs(bool down)
 {
 	(void)explore_start(down ? 3 : 2);

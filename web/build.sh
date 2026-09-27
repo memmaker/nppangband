@@ -28,7 +28,7 @@ emcc -O2 -fcommon -std=gnu99 -DUSE_WEB -Isrc -w \
 	-sFORCE_FILESYSTEM -lidbfs.js -sENVIRONMENT=web \
 	--preload-file web/stage/lib@/nppangband/lib
 
-cp web/index.html "$HOME/Games/rvip-tools/web/rvip-wm.js" web/nppangband.js web/tiles.webp "$OUT/"
+cp web/index.html web/nppangband.js web/tiles.webp "$OUT/"
 # The game guide (Help button); the same content as docs/web/nppangband-docs.html
 python3 web/make-help.py > "$OUT/help.html"
 # Town music (depth 0), vendored from the Zangband template (Quickband's)

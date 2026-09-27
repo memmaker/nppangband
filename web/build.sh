@@ -29,6 +29,9 @@ emcc -O2 -fcommon -std=gnu99 -DUSE_WEB -Isrc -w \
 	--preload-file web/stage/lib@/nppangband/lib
 
 cp web/index.html web/nppangband.js web/tiles.webp "$OUT/"
+# Font choosers: the index page's fonts/*.woff (loaded from ../fonts/)
+FONTS="${FONTS:-$HOME/Games/roguelikes-index/fonts}"
+(ls "$FONTS" 2>/dev/null | sed -n 's/\.woff$//p') | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read().split()))' > "$OUT/fonts.json"
 # The game guide (Help button); the same content as docs/web/nppangband-docs.html
 python3 web/make-help.py > "$OUT/help.html"
 # Town music (depth 0), vendored from the Zangband template (Quickband's)

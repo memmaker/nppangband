@@ -25,18 +25,21 @@
 	var events = [];
 	var tiles = new Image();
 	var tilesReady = false;
-	var running = false;
 	var dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
 
 	function $(id) { return document.getElementById(id); }
 
+	/* Saves, export/import, new game, help and crashes: the shared rvip-app.js */
+	var app = RvipApp({
+		name: 'nppangband',
+		save: function () { return saveFilePath() || null; },
+		clear: removeSaves,
+		put: function (file, data) { Module.FS.mkdirTree('/nppangband/lib/save'); Module.FS.writeFile('/nppangband/lib/save/' + SAVE_NAME, data); },
+		exportName: function (p) { return 'nppangband-' + p.split('/').pop().replace(/^\d+\./, '') + '.sav'; },
+		flush: function (done) { if (Module._web_request_save) Module._web_request_save(); setTimeout(done, 1500); },
+	});
+
 	var row0 = [];   /* the main term's message row (row 0), for RvipWM.prompt */
-	function status(msg, isError) {
-		var s = $('status');
-		s.textContent = msg;
-		s.className = isError ? 'error' : '';
-		s.hidden = !msg;
-	}
 
 	/* ---------- tiling window layout ---------- */
 
@@ -131,7 +134,7 @@
 		saveTimer = setTimeout(function () {
 			try {
 				Module.FS.writeFile(LAYOUT_FILE, JSON.stringify(L));
-				syncFiles();
+				app.sync();
 			} catch (err) { console.warn('layout not saved', err); }
 		}, 400);
 	}
@@ -148,7 +151,6 @@
 		if (l.autoSplit) l.split = d.split;
 		if (l.autoTile) l.tile = d.tile;
 	}
-
 
 	function place(el, r) {
 		el.style.left = r[0] + 'px';
@@ -278,7 +280,6 @@
 		else schedTimer = setTimeout(function () { schedLast = Date.now(); scheduleLayout(); }, 80);
 	}
 
-
 	/* Zoom: main window tile size, sub window font size */
 	function zoomMain(dir) {
 		var i = TILE_STEPS.indexOf(L.tile);
@@ -288,9 +289,9 @@
 		L.autoTile = false;
 		scheduleLayout();
 		saveLayout();
-		status('Map tiles: ' + L.tile + ' px');
+		app.status('Map tiles: ' + L.tile + ' px');
 		clearTimeout(zoomMsgTimer);
-		zoomMsgTimer = setTimeout(function () { status(''); }, 1200);
+		zoomMsgTimer = setTimeout(function () { app.status(''); }, 1200);
 	}
 	var zoomMsgTimer = 0;
 
@@ -418,7 +419,7 @@
 		if (!n) { if (now) redraw(); return; }
 		var ff = new FontFace(n, 'url(../fonts/' + n + '.woff)');
 		ff.load().then(function () { document.fonts.add(ff); redraw(); })
-			.catch(function () { status('Could not load the font ' + n + '.', true); });
+			.catch(function () { app.status('Could not load the font ' + n + '.', true); });
 	}
 
 	function renderAudio() {
@@ -553,20 +554,20 @@
 
 		plog: function (msg) {
 			console.warn('[nppangband]', msg);
-			status(msg, true);
+			app.status(msg, true);
 		},
 
-		sync: function () { syncFiles(); },
+		sync: function () { app.sync(); },
 
 		quit: function (msg, dead) {
-			running = false;
+			app.running = false;
 			/* Death: the game showed tombstone + scores; straight into a new game */
 			if (dead && !msg) {
-				status('Starting a new game…');
-				syncFiles(function () { location.reload(); });
+				app.status('Starting a new game…');
+				app.sync(function () { location.reload(); });
 				return;
 			}
-			syncFiles();
+			app.sync();
 			$('overlay-msg').textContent = msg ? msg : 'Your game has been saved.';
 			$('overlay').hidden = false;
 		}
@@ -598,14 +599,9 @@
 	var KP_NAV = [0xFF9E, 0xFF9C, 0xFF99, 0xFF9B, 0xFF96, 0xFF9D, 0xFF98, 0xFF95, 0xFF97, 0xFF9A];
 
 	function onKey(e) {
-		/* The help overlay has the keyboard while it is open */
-		if (!$('help').hidden) {
-			if (e.key === 'Escape') { $('help').hidden = true; e.preventDefault(); }
-			return;
-		}
 		/* Typing a window title */
 		if (e.target && e.target.closest && e.target.closest('input, textarea, [contenteditable]')) return;
-		if (!running || e.isComposing) return;
+		if (!app.running || e.isComposing) return;
 		if (e.metaKey) return;               /* leave Cmd shortcuts to the browser */
 		var k = e.key, code = e.code || '';
 
@@ -648,7 +644,7 @@
 	}
 
 	function onMouse(e) {
-		if (!running) return;
+		if (!app.running) return;
 		var T = terms[0], r = T.cv.getBoundingClientRect();
 		var sx = r.width / (T.cols * T.cw), sy = r.height / (T.rows * T.ch);
 		var x = Math.floor((e.clientX - r.left) / sx / T.cw);
@@ -660,8 +656,6 @@
 
 	/* ---------- persistence (IndexedDB via IDBFS) ---------- */
 
-	var syncing = false, syncAgain = false;
-
 	function mountPersistent() {
 		var FS = Module.FS;
 		PERSIST.forEach(function (d) {
@@ -672,36 +666,12 @@
 		FS.syncfs(true, function (err) {
 			if (err) {
 				console.error(err);
-				status('Could not read saved games from IndexedDB (' + err + '). ' +
+				app.status('Could not read saved games from IndexedDB (' + err + '). ' +
 					'Saving may not work in this browser mode.', true);
 			}
 			Module.removeRunDependency('idbfs');
 		});
 	}
-
-	/* Write the save directories to IndexedDB; cb(err) when done */
-	function syncFiles(cb) {
-		if (!Module.FS) { if (cb) cb(); return; }
-		if (syncing) {
-			syncAgain = true;
-			if (cb) pendingCbs.push(cb);
-			return;
-		}
-		syncing = true;
-		var cbs = pendingCbs.concat(cb ? [cb] : []);
-		pendingCbs = [];
-		Module.FS.syncfs(false, function (err) {
-			syncing = false;
-			if (err) {
-				console.error(err);
-				status('Saving to browser storage (IndexedDB) failed: ' + err +
-					'. Use "Export save" to keep a copy.', true);
-			}
-			cbs.forEach(function (f) { f(err); });
-			if (syncAgain) { syncAgain = false; syncFiles(); }
-		});
-	}
-	var pendingCbs = [];
 
 	function listFiles() {
 		var FS = Module.FS, out = [];
@@ -730,60 +700,6 @@
 		return files[0];
 	}
 
-	function exportSave() {
-		if (running) Module._web_request_save();
-		setTimeout(function () {
-			var p = saveFilePath();
-			if (!p) { status('There is no saved game yet.', true); return; }
-			var blob = new Blob([Module.FS.readFile(p)], { type: 'application/octet-stream' });
-			var a = document.createElement('a');
-			a.href = URL.createObjectURL(blob);
-			a.download = 'nppangband-' + p.split('/').pop().replace(/^\d+\./, '') + '.sav';
-			document.body.appendChild(a);
-			a.click();
-			setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-		}, running ? 1500 : 0);
-	}
-
-	function importSave(file) {
-		var r = new FileReader();
-		r.onload = function () {
-			if (!confirm('Replace the current saved game with "' + file.name + '"?')) return;
-			running = false;
-			removeSaves();
-			Module.FS.writeFile('/nppangband/lib/save/' + SAVE_NAME, new Uint8Array(r.result));
-			syncFiles(function (err) { if (!err) location.reload(); });
-		};
-		r.readAsArrayBuffer(file);
-	}
-
-	function newGame() {
-		if (!confirm('Delete the saved character in this browser and start a new one?')) return;
-		running = false;
-		removeSaves();
-		syncFiles(function (err) { if (!err) location.reload(); });
-	}
-
-	/* Help: the game guide (help.html, generated at build time) */
-	var helpLoaded = false;
-	function toggleHelp() {
-		var h = $('help');
-		h.hidden = !h.hidden;
-		if (!h.hidden && !helpLoaded) {
-			helpLoaded = true;
-			fetch('help.html').then(function (r) {
-				if (!r.ok) throw new Error(r.status);
-				return r.text();
-			}).then(function (t) {
-				$('help-body').innerHTML = t;
-			}).catch(function (err) {
-				helpLoaded = false;
-				$('help-body').textContent = 'Could not load the guide (' + err + '). Press ? in the game for its own help.';
-			});
-		}
-		if (!h.hidden) $('help-body').focus();
-	}
-
 	/* uid 0 in Emscripten; see process_player_name() */
 	var SAVE_NAME = '0.PLAYER';
 
@@ -806,8 +722,8 @@
 		}],
 		/* Terms must exist before main() runs (it asks for their sizes) */
 		onRuntimeInitialized: function () {
-			running = true;
-			status('');
+			app.running = true;
+			app.status('');
 			$('game').hidden = false;
 			buildTerms();
 			renderTiles();
@@ -817,12 +733,9 @@
 		print: function (s) { console.log(s); },
 		printErr: function (s) { console.warn(s); },
 		setStatus: function (s) {
-			if (s && !running) status(s.replace(/\(\d+\/\d+\)/, '').trim() || 'Loading…');
+			if (s && !app.running) app.status(s.replace(/\(\d+\/\d+\)/, '').trim() || 'Loading…');
 		},
-		onAbort: function (what) {
-			running = false;
-			status('The game crashed: ' + what + '. Reload the page to continue from your last save.', true);
-		}
+		onAbort: function (what) { app.crashed(new Error(what)); }
 	};
 
 	/* Tile sheet; main() waits for it */
@@ -830,7 +743,7 @@
 	function tilesFinished(ok) {
 		tilesReady = ok;
 		tilesDone = true;
-		if (!ok && TILE_SRC) status('Could not load the tile set; using text.', true);
+		if (!ok && TILE_SRC) app.status('Could not load the tile set; using text.', true);
 		if (tilesWait) Module.removeRunDependency('tiles');
 	}
 	tiles.onload = function () { tilesFinished(true); };
@@ -843,12 +756,6 @@
 	document.addEventListener('DOMContentLoaded', function () {
 		var mainCv = document.querySelector('#t-main canvas');
 		mainCv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-		$('btn-export').onclick = exportSave;
-		$('btn-import').onclick = function () { $('import-file').click(); };
-		$('import-file').onchange = function () { if (this.files[0]) importSave(this.files[0]); this.value = ''; };
-		$('btn-new').onclick = newGame;
-		$('btn-help').onclick = toggleHelp;
-		$('help-close').onclick = toggleHelp;
 		RvipWM.dropdown($('btn-file'), $('file-menu'));
 		RvipWM.dropdown($('btn-audio'), $('audio-menu'));
 		$('chk-sound').onchange = function () { toggleAudio('sound'); };
@@ -887,23 +794,6 @@
 		$('btn-restart').onclick = function () { location.reload(); };
 	});
 
-	/*
-	 * A trap inside the game (e.g. a bad function pointer) can surface as an
-	 * unhandled promise rejection after an Asyncify resume, bypassing onAbort.
-	 */
-	function crashed(err) {
-		if (!running) return;
-		running = false;
-		var msg = (err && (err.message || err.reason && err.reason.message)) || String(err);
-		console.error('[nppangband] crash:', err);
-		status('The game crashed (' + msg + '). Reload the page to continue from your last save.', true);
-	}
-	window.addEventListener('unhandledrejection', function (e) { crashed(e.reason); });
-	window.addEventListener('error', function (e) {
-		if (e.error instanceof WebAssembly.RuntimeError || /nppangband-core/.test(e.filename || ''))
-			crashed(e.error || e.message);
-	});
-
 	/* Resize and reposition the windows when the browser window changes */
 	var resizeTimer = 0;
 	window.addEventListener('resize', function () {
@@ -916,20 +806,20 @@
 
 	/* Autosave when the tab is hidden; keep IndexedDB current */
 	document.addEventListener('visibilitychange', function () {
-		if (document.hidden && running && Module._web_request_save) Module._web_request_save();
-		if (document.hidden) syncFiles();
+		if (document.hidden && app.running && Module._web_request_save) Module._web_request_save();
+		if (document.hidden) app.sync();
 	});
-	window.addEventListener('pagehide', function () { syncFiles(); });
+	window.addEventListener('pagehide', function () { app.sync(); });
 	window.addEventListener('beforeunload', function (e) {
-		if (!running) return;
-		syncFiles();
+		if (!app.running) return;
+		app.sync();
 		e.preventDefault();
 		e.returnValue = '';
 	});
-	setInterval(function () { if (running) syncFiles(); }, 15000);
+	setInterval(function () { if (app.running) app.sync(); }, 15000);
 
 	/* Autosave every two minutes (the game only saves when idle at the command prompt) */
 	setInterval(function () {
-		if (running && Module._web_request_save) Module._web_request_save();
+		if (app.running && Module._web_request_save) Module._web_request_save();
 	}, 120000);
 })();

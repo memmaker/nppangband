@@ -29,6 +29,9 @@ for line in open(os.path.join(PACK, 'sound.prf'), encoding='latin-1'):
     m = re.match(r'sound:(\w+):(.*)', line.strip())
     if m:
         pack[m[1]] = [f + '.mp3' for f in m[2].split() if os.path.exists(os.path.join(PACK, f + '.mp3'))]
+# The pack's MISS is a bow sample (plc_miss_arrow2); a melee miss is a swing (RVIP finetuning, Sound)
+if os.path.exists(os.path.join(PACK, 'plc_miss_swish.mp3')):
+    pack['MISS'] = ['plc_miss_swish.mp3']
 cfg_path, out = sys.argv[1], sys.argv[2]
 os.makedirs(out, exist_ok=True)
 lines = ['# NPPAngband web build: Dubtrain Angband Sound Pack v3.1.0 (web/sounds.py)', '[Sound]']

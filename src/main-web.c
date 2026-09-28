@@ -63,6 +63,11 @@ EM_JS(int, js_tiles_wanted, (void), {
 	return Module.qb.tilesWanted();
 });
 
+/* Map zoom in tile mode (1..4): a big tile is 2m x m cells (tile_mult) */
+EM_JS(int, js_tile_mult, (void), {
+	return Module.qb.tileMult();
+});
+
 EM_JS(int, js_tiles_switch, (void), {
 	return Module.qb.tilesSwitch();
 });
@@ -270,6 +275,12 @@ static int web_pump(void)
 			web_switch_graphics(on);
 			got = 1;
 		}
+		else if (js_tile_mult() != tile_mult)
+		{
+			tile_mult = js_tile_mult();
+			if (use_bigtile) do_cmd_redraw();
+			got = 1;
+		}
 	}
 
 	/* Safe autosave: only while waiting for a command */
@@ -380,7 +391,14 @@ static errr Term_text_web(int x, int y, int n, byte a, cptr s)
 static errr Term_pict_web(int x, int y, int n, const byte *ap, const char *cp,
                           const byte *tap, const char *tcp)
 {
-	js_pict(web_idx(), x, y, n, ap, cp, tap, tcp, use_bigtile ? 1 : 0);
+	int big = use_bigtile ? 1 : 0;
+
+	/* A map grid (filler cells below it): drawn over 2m x m cells */
+	if (big && (tile_mult > 1) && (y + 1 < Term->hgt) &&
+	    (Term->scr->a[y + 1][x] == 255) && (Term->scr->c[y + 1][x] == -1))
+		big = tile_mult;
+
+	js_pict(web_idx(), x, y, n, ap, cp, tap, tcp, big);
 	return (0);
 }
 
@@ -482,6 +500,7 @@ errr init_web(int argc, char **argv)
 	web_react();
 
 	/* Tiles unless the page says text */
+	tile_mult = js_tile_mult();
 	web_graphics(js_tiles_wanted());
 
 	for (i = 0; i < WEB_TERMS; i++)

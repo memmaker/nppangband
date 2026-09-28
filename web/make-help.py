@@ -105,7 +105,7 @@ SAVING = '''<ul>
 WEB = '''<ul>
 <li><strong>Windows:</strong> the map fills the big window; Inventory and Visible (monsters in view) are on the right, Messages along the bottom. Recall, Equipment, Character and Objects can be turned on under <em>Windows</em>.</li>
 <li><strong>Resize windows</strong> by dragging the gaps between them; the game redraws them at their new size.</li>
-<li><strong>Zoom:</strong> <em>Zoom −</em> / <em>Zoom +</em> change the size of the map tiles.</li>
+<li><strong>Zoom:</strong> <em>A−</em> / <em>A+</em> on the Map title bar (shown on hover) change the size of the map tiles.</li>
 <li><strong>Keys:</strong> arrow keys, the numeric keypad or <kbd>1</kbd>–<kbd>9</kbd> move you; <kbd>Shift</kbd> + direction runs. There is no mouse support in this port.</li>
 <li><strong>Tiles</strong> switches between the Shockbolt tiles and text. <strong>Sound</strong> and <strong>Music</strong> are off by default; Music plays a town tune on the surface.</li>
 <li>Browsers keep a few shortcuts for themselves (<kbd>Ctrl+W</kbd>, <kbd>Ctrl+T</kbd>, <kbd>Ctrl+N</kbd>), so those never reach the game.</li>

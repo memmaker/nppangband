@@ -413,7 +413,7 @@
 		renderTiles();
 		if (terms.length) scheduleLayout();   /* text mode sizes map cells from the font */
 	}
-	function renderTiles() { $('btn-tiles').textContent = 'Tiles: ' + (L && L.text ? 'off' : 'on'); renderMapSel(); }
+	function renderTiles() { $('btn-tiles').textContent = 'Tiles: ' + (tilesReady && !(L && L.text) ? 'Shockbolt' : 'None'); renderMapSel(); }   /* the set's name; None = text */
 	/* Map font select on the Map title bar, text mode only (shown on hover) */
 	var mapSel = document.createElement('select');
 	mapSel.title = 'Map font (text mode)';
@@ -759,6 +759,7 @@
 	function tilesFinished(ok) {
 		tilesReady = ok;
 		tilesDone = true;
+		if (L) renderTiles();
 		if (!ok && TILE_SRC) app.status('Could not load the tile set; using text.', true);
 		if (tilesWait) Module.removeRunDependency('tiles');
 	}
